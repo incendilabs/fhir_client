@@ -22,8 +22,8 @@ Style:
 Layout:
   Enabled: false
 
-Performance/Casecmp:
+Naming:
   Enabled: false
 
-Naming:
+Lint/NonDeterministicRequireOrder:
   Enabled: false
