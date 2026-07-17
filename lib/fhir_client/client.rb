@@ -77,6 +77,26 @@ module FHIR
       @default_format = versioned_format_class
     end
 
+    def use_r4b
+      @fhir_version = :r4b
+      @default_format = versioned_format_class
+    end
+
+    def use_fhir_version(fhir_version)
+      case fhir_version
+      when :r4
+        use_r4
+      when :r4b
+        use_r4b
+      when :stu3
+        use_stu3
+      when :dstu2
+        use_dstu2
+      else
+        raise ClientException, "Unsupported FHIR version: #{fhir_version}"
+      end
+    end
+
     #
     # Instructs the client to specify the minimal Prefer Header where applicable
     def use_minimal_preference
@@ -93,15 +113,9 @@ module FHIR
 
     def detect_version
       cap = capability_statement
-      if cap.is_a?(FHIR::CapabilityStatement)
-        use_r4
-      elsif cap.is_a?(FHIR::STU3::CapabilityStatement)
-        use_stu3
-      elsif cap.is_a?(FHIR::DSTU2::Conformance)
-        use_dstu2
-      else
-        use_r4
-      end
+      raise ClientException, 'Unable to detect server FHIR version from metadata' unless cap
+
+      use_fhir_version(fhir_version_for(cap.fhirVersion))
       # Should update the default_format when changing fhir_version
       @default_format = versioned_format_class
       FHIR.logger.info("Detecting server FHIR version as #{@fhir_version} via metadata")
@@ -269,28 +283,17 @@ module FHIR
       formats.each do |frmt|
         reply = get 'metadata', fhir_headers({accept: "#{frmt}"})
         next unless reply.code == 200
-        use_r4
-        begin
-          @cached_capability_statement = parse_reply(FHIR::CapabilityStatement, frmt, reply)
-        rescue
-          @cached_capability_statement = nil
-        end
-        if @cached_capability_statement.nil? || !@cached_capability_statement.fhirVersion.starts_with?('4')
-          use_stu3
-          begin
-            @cached_capability_statement = parse_reply(FHIR::STU3::CapabilityStatement, frmt, reply)
-          rescue
-            @cached_capability_statement = nil
-          end
-          unless @cached_capability_statement
-            use_dstu2
-            begin
-              @cached_capability_statement = parse_reply(FHIR::DSTU2::Conformance, frmt, reply)
-            rescue
-              @cached_capability_statement = nil
-            end
-          end
-        end
+
+        version = capability_fhir_version(reply.body)
+        next unless version
+
+        use_fhir_version(fhir_version_for(version))
+        capability_class = if @fhir_version == :dstu2
+                             FHIR::DSTU2::Conformance
+                           else
+                             versioned_resource_class(:CapabilityStatement)
+                           end
+        @cached_capability_statement = parse_reply(capability_class, frmt, reply)
         if @cached_capability_statement
           @default_format = frmt
           break
@@ -317,25 +320,9 @@ module FHIR
       return nil unless [200, 201].include? response.code
       res = nil
       begin
-        res = if(@fhir_version == :dstu2 || klass&.ancestors&.include?(FHIR::DSTU2::Model))
-                if(format.include?('xml'))
-                  FHIR::DSTU2::Xml.from_xml(response.body)
-                else
-                  FHIR::DSTU2::Json.from_json(response.body)
-                end
-              elsif(@fhir_version == :r4 || klass&.ancestors&.include?(FHIR::Model))
-                if(format.include?('xml'))
-                  FHIR::Xml.from_xml(response.body)
-                else
-                  FHIR::Json.from_json(response.body)
-                end
-              else
-                if(format.include?('xml'))
-                  FHIR::STU3::Xml.from_xml(response.body)
-                else
-                  FHIR::STU3::Json.from_json(response.body)
-                end
-              end
+        namespace = resource_namespace_for(klass)
+        parser = format.include?('xml') ? namespace.const_get(:Xml) : namespace.const_get(:Json)
+        res = format.include?('xml') ? parser.from_xml(response.body) : parser.from_json(response.body)
         res.client = self unless res.nil?
       rescue => e
         FHIR.logger.error "Failed to parse #{format} as resource #{klass}: #{e.message}"
@@ -360,6 +347,34 @@ module FHIR
     end
 
     private
+
+    def capability_fhir_version(body)
+      return nil if body.nil?
+
+      begin
+        json = JSON.parse(body)
+        return json['fhirVersion']
+      rescue JSON::ParserError
+        document = Nokogiri::XML(body)
+        version = document.at_xpath('//*[local-name()="fhirVersion"]')
+        version && version['value']
+      end
+    end
+
+    def fhir_version_for(version)
+      case version.to_s
+      when /\A4\.0\./
+        :r4
+      when /\A4\.3\./
+        :r4b
+      when /\A3\.0\./
+        :stu3
+      when /\A1\.0\./
+        :dstu2
+      else
+        raise ClientException, "Unsupported FHIR version reported by server: #{version}"
+      end
+    end
 
     def base_path(path)
       if path.start_with?('/')

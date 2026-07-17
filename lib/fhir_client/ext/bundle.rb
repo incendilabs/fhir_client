@@ -68,3 +68,11 @@ module FHIR
     end
   end
 end
+
+module FHIR
+  module R4B
+    class Bundle
+      include FHIR::BundleExtras
+    end
+  end
+end

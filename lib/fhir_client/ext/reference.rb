@@ -56,24 +56,23 @@ module FHIR
 
     def read
       return if !(relative? || absolute?)
-      if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
-        read_client = client
-      else
-        read_client = FHIR::Client.new base_uri, default_format: client.default_format, proxy: client.proxy
-      end
-      resource_class.read(reference_id, read_client)
+      resource_class.read(reference_id, reference_client)
     end
 
     def vread
       return if !(relative? || absolute?) || version_id.blank?
-      if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
-        read_client = client
-      else
-        read_client = FHIR::Client.new base_uri, default_format: client.default_format, proxy: client.proxy
-      end
-      resource_class.vread(reference_id, version_id, read_client)
+      resource_class.vread(reference_id, version_id, reference_client)
     end
 
+    private
+
+    def reference_client
+      return client if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
+
+      external_client = FHIR::Client.new base_uri, default_format: client.default_format, proxy: client.proxy
+      external_client.use_fhir_version(client.fhir_version)
+      external_client
+    end
   end
 end
 
@@ -106,6 +105,18 @@ module FHIR
 
       def resource_class
         "FHIR::STU3::#{resource_type}".constantize unless contained?
+      end
+    end
+  end
+end
+
+module FHIR
+  module R4B
+    class Reference
+      include FHIR::ReferenceExtras
+
+      def resource_class
+        "FHIR::R4B::#{resource_type}".constantize unless contained?
       end
     end
   end
