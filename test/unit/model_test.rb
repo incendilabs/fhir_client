@@ -6,7 +6,7 @@ class ModelTest < Test::Unit::TestCase
 
   def test_default_instance_exception
     stub_request(:post, /create/).to_return(status: 403, body: "")
-    client = FHIR::Client.new('create')
+    client = FHIR::Client.new('create', fhir_version: :r4)
     client.default_json
     FHIR::Model.client = client
 
@@ -17,7 +17,7 @@ class ModelTest < Test::Unit::TestCase
 
   def test_custom_instance_exception
     stub_request(:post, /create/).to_return(status: 403, body: "")
-    client = FHIR::Client.new('create')
+    client = FHIR::Client.new('create', fhir_version: :r4)
     client.default_json
     client.exception_class = TestUnitCustomException
     FHIR::Model.client = client
@@ -29,7 +29,7 @@ class ModelTest < Test::Unit::TestCase
 
   def test_default_class_exception
     stub_request(:post, /create/).to_return(status: 403, body: "")
-    client = FHIR::Client.new('create')
+    client = FHIR::Client.new('create', fhir_version: :r4)
     client.default_json
     FHIR::Model.client = client
 
@@ -40,7 +40,7 @@ class ModelTest < Test::Unit::TestCase
 
   def test_custom_class_exception
     stub_request(:post, /create/).to_return(status: 403, body: "")
-    client = FHIR::Client.new('create')
+    client = FHIR::Client.new('create', fhir_version: :r4)
     client.default_json
     client.exception_class = TestUnitCustomException
     FHIR::Model.client = client

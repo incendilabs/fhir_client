@@ -94,7 +94,7 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
   def test_read_contained
     stub_request(:get, /extras/).to_return(body: FHIR::Patient.new.to_json)
-    client = FHIR::Client.new('extras')
+    client = FHIR::Client.new('extras', fhir_version: :r4)
     client.default_json
     FHIR::Model.client = client
     assert FHIR::Reference.new({'reference': '#foo'}).read.nil?
@@ -102,7 +102,7 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
   def test_read_reference_relative
     stub_request(:get, 'https://my-server.com/fhir/Patient/foo').to_return(body: FHIR::Patient.new.to_json)
-    client = FHIR::Client.new('https://my-server.com/fhir')
+    client = FHIR::Client.new('https://my-server.com/fhir', fhir_version: :r4)
     client.default_json
     FHIR::Model.client = client
     ref = FHIR::Reference.new({'reference': 'Patient/foo'})
@@ -112,7 +112,7 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
   def test_read_reference_absolute_same_base
     stub_request(:get, 'https://my-server.com/fhir/Patient/foo').to_return(body: FHIR::Patient.new.to_json)
-    client = FHIR::Client.new('https://my-server.com/fhir')
+    client = FHIR::Client.new('https://my-server.com/fhir', fhir_version: :r4)
     client.default_json
     FHIR::Model.client = client
     ref = FHIR::Reference.new({'reference': 'https://my-server.com/fhir/Patient/foo'})
@@ -123,7 +123,7 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
   def test_read_reference_absolute_different_base
     stub_request(:get, 'https://external-server.com/fhir/Patient/foo').to_return(body: FHIR::Patient.new.to_json)
-    client = FHIR::Client.new('https://my-server.com/fhir')
+    client = FHIR::Client.new('https://my-server.com/fhir', fhir_version: :r4)
     client.default_json
     FHIR::Model.client = client
     ref = FHIR::Reference.new({'reference': 'https://external-server.com/fhir/Patient/foo'})
@@ -134,7 +134,7 @@ class ReferencesExtrasTest < Test::Unit::TestCase
 
   def test_vread_reference
     stub_request(:get, 'https://my-server.com/fhir/Patient/foo/_history/6').to_return(body: FHIR::Patient.new.to_json)
-    client = FHIR::Client.new('https://my-server.com/fhir')
+    client = FHIR::Client.new('https://my-server.com/fhir', fhir_version: :r4)
     client.default_json
     FHIR::Model.client = client
     ref = FHIR::Reference.new({'reference': 'Patient/foo/_history/6'})

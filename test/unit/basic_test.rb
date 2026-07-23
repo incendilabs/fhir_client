@@ -2,11 +2,27 @@ require_relative '../test_helper'
 
 class BasicTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new("http://basic-test.com/fhir/")
+    @client ||= FHIR::Client.new("http://basic-test.com/fhir/", fhir_version: :r4)
   end
 
   def test_client_initialization
     assert !client.use_format_param, 'Using _format instead of [Accept] headers.'
+  end
+
+  def test_client_requires_an_explicit_fhir_version
+    assert_raise(ArgumentError) { FHIR::Client.new('http://version-required.test') }
+  end
+
+  def test_auto_client_rejects_versioned_operations_before_detection
+    auto_client = FHIR::Client.new('http://autodetect.test', fhir_version: :auto)
+
+    error = assert_raise(ClientException) { auto_client.fhir_namespace }
+    assert_equal 'FHIR version has not been detected', error.message
+
+    error = assert_raise(ClientException) do
+      auto_client.read(FHIR::Patient, 'example')
+    end
+    assert_equal 'FHIR version has not been detected', error.message
   end
 
   def test_set_basic_auth_auth

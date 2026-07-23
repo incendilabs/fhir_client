@@ -17,6 +17,8 @@ module FHIR
         FHIR::STU3
       when :dstu2
         FHIR::DSTU2
+      when :auto
+        raise ClientException, 'FHIR version has not been detected'
       else
         raise ClientException, "Unsupported FHIR version: #{@fhir_version}"
       end

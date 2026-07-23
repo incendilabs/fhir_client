@@ -2,7 +2,7 @@ require_relative '../../test_helper'
 
 class ClientInterfaceHistoryTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new('history-test')
+    @client ||= FHIR::Client.new('history-test', fhir_version: :r4)
   end
 
   def test_history_uses_default_json_dstu2

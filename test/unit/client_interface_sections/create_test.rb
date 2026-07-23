@@ -2,7 +2,7 @@ require_relative '../../test_helper'
 
 class ClientInterfaceCreateTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new('create-test')
+    @client ||= FHIR::Client.new('create-test', fhir_version: :r4)
   end
 
   def test_create_response_properly_parsed_xml

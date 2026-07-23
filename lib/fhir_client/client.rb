@@ -21,7 +21,7 @@ module FHIR
     attr_accessor :client
 
     attr_accessor :default_format
-    attr_accessor :fhir_version
+    attr_reader :fhir_version
     attr_accessor :cached_capability_statement
     attr_accessor :additional_headers
     attr_accessor :proxy
@@ -35,21 +35,28 @@ module FHIR
     # with a valid base server URL prior to using the client.
     #
     # @param base_service_url Base service URL for FHIR Service.
+    # @param fhir_version Explicit FHIR version or :auto for metadata detection.
     # @param default_format Default Format Mime type
     # @return
     #
-    def initialize(base_service_url, default_format: FHIR::Formats::ResourceFormat::RESOURCE_JSON, proxy: nil)
+    def initialize(base_service_url, fhir_version:, default_format: FHIR::Formats::ResourceFormat::RESOURCE_JSON, proxy: nil)
       @base_service_url = base_service_url
       FHIR.logger.info "Initializing client with #{@base_service_url}"
       @use_format_param = false
       @use_accept_header = true
       @use_accept_charset = true
       @default_format = default_format
-      @fhir_version = :r4
+      @fhir_version = nil
       @use_return_preference = false
       @return_preference = FHIR::Formats::ReturnPreferences::REPRESENTATION
       @exception_class = ClientException
       @proxy = proxy
+
+      if fhir_version == :auto
+        @fhir_version = :auto
+      else
+        use_fhir_version(fhir_version)
+      end
 
       set_no_auth
     end
@@ -304,6 +311,7 @@ module FHIR
     end
 
     def resource_url(options)
+      fhir_namespace
       FHIR::ResourceAddress.resource_url(options, @use_format_param)
     end
 

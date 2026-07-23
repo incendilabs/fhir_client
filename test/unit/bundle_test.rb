@@ -2,7 +2,7 @@ require_relative '../test_helper'
 
 class BundleTest < Test::Unit::TestCase
   def test_example_bundle
-    client = FHIR::Client.new('bundle-test')
+    client = FHIR::Client.new('bundle-test', fhir_version: :r4)
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     bundle_xml = File.read(File.join(root, 'fixtures', 'bundle-example.xml'))
     response = {
@@ -18,7 +18,7 @@ class BundleTest < Test::Unit::TestCase
   end
 
   def test_next_bundle
-    client = FHIR::Client.new('bundle-test')
+    client = FHIR::Client.new('bundle-test', fhir_version: :r4)
     client.default_xml
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     bundle_xml = File.read(File.join(root, 'fixtures', 'bundle-example.xml'))
@@ -38,7 +38,7 @@ class BundleTest < Test::Unit::TestCase
   end
 
   def test_each
-    client = FHIR::Client.new('bundle-test')
+    client = FHIR::Client.new('bundle-test', fhir_version: :r4)
     client.default_xml
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     bundle_xml = File.read(File.join(root, 'fixtures', 'bundle-example.xml'))
@@ -62,7 +62,7 @@ class BundleTest < Test::Unit::TestCase
   end
 
   def test_each_no_block
-    client = FHIR::Client.new('bundle-test')
+    client = FHIR::Client.new('bundle-test', fhir_version: :r4)
     client.default_xml
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     bundle_xml = File.read(File.join(root, 'fixtures', 'bundle-example.xml'))

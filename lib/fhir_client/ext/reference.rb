@@ -69,8 +69,12 @@ module FHIR
     def reference_client
       return client if relative? || reference == client.full_resource_url(resource: resource_class, id: reference_id)
 
-      external_client = FHIR::Client.new base_uri, default_format: client.default_format, proxy: client.proxy
-      external_client.use_fhir_version(client.fhir_version)
+      external_client = FHIR::Client.new(
+        base_uri,
+        fhir_version: client.fhir_version,
+        default_format: client.default_format,
+        proxy: client.proxy
+      )
       external_client
     end
   end

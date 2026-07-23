@@ -2,7 +2,7 @@ require_relative '../../test_helper'
 
 class ClientInterfaceSearchTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new("search-test")
+    @client ||= FHIR::Client.new("search-test", fhir_version: :r4)
   end
 
   def test_url_encoding_only_happens_once

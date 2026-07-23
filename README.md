@@ -3,7 +3,7 @@
 Ruby FHIR client.
 
 Supports:
-* FHIR R4, STU3 and DSTU2
+* FHIR R4B, R4, STU3 and DSTU2
 * JSON and XML
 * All CRUD, including version read and history
 * Transactions and Batches
@@ -18,7 +18,7 @@ Supports:
 
 ## Creating a Client
 ```ruby
-client = FHIR::Client.new(url)
+client = FHIR::Client.new(url, fhir_version: :r4)
 ```
 
 This client supports two modes of operation: basic and advanced.  The basic mode is useful for simple operations
@@ -59,19 +59,25 @@ patient.destroy
 ## Advanced Usage
 
 ### Changing FHIR Versions
-The client defaults to `R4` but can be switched to `DSTU2` or `STU3`. It can also attempt to autodetect the FHIR version based on the `metadata` endpoint.
+The FHIR version is required when the client is created. Pass `:auto` to
+explicitly select version detection through the server's `metadata` endpoint.
 
 ```ruby
 # autodetect the FHIR version
-client = FHIR::Client.new(url)
+client = FHIR::Client.new(url, fhir_version: :auto)
 version = client.detect_version
-if version == :stu3
+if version == :r4b
+  puts 'FHIR Client using R4B'
+elsif version == :r4
+  puts 'FHIR Client using R4'
+elsif version == :stu3
   puts 'FHIR Client using STU3'
 elsif version == :dstu2
   puts 'FHIR Client using DSTU2'
-elsif version == :r4
-  puts 'FHIR Client using R4'
 end
+
+# tell the client to use R4B
+client.use_r4b
 
 # tell the client to use R4
 client.use_r4
@@ -79,7 +85,7 @@ client.use_r4
 patient = FHIR::Patient.read('example')
 patient = client.read(FHIR::Patient, 'example').resource
 
-# tell the client to use STU3 (default)
+# tell the client to use STU3
 client.use_stu3
 # now use the client normally
 patient = FHIR::STU3::Patient.read('example')
@@ -98,7 +104,7 @@ patient = client.read(FHIR::DSTU2::Patient, 'example').resource
 The client defaults to `json` representation of resources but can be switched to `xml` representations.
 
 ```ruby
-client = FHIR::Client.new(url)
+client = FHIR::Client.new(url, fhir_version: :r4)
 
 # Tell the client to use xml
 client.default_xml
@@ -200,7 +206,7 @@ reply = @client.end_transaction
 
 ### OAuth2 Support
 ```ruby
-client = FHIR::Client.new(url)
+client = FHIR::Client.new(url, fhir_version: :r4)
 client_id = 'example'
 client_secret = 'secret'
 options = client.get_oauth2_metadata_from_conformance
