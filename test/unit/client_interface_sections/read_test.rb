@@ -1,7 +1,7 @@
 require_relative '../../test_helper'
 class ClientInterfaceReadTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new('read-test')
+    @client ||= FHIR::Client.new('read-test', fhir_version: :r4)
   end
 
   def check_header_keys(reply)

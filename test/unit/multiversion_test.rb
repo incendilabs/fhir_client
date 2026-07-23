@@ -6,7 +6,7 @@ class MultiversionTest < Test::Unit::TestCase
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     capabilitystatement = File.read(File.join(root, 'fixtures', 'capabilitystatement.json'))
     stub_request(:get, /autodetect/).to_return(body: capabilitystatement)
-    client = FHIR::Client.new('autodetect')
+    client = FHIR::Client.new('autodetect', fhir_version: :auto)
     # Intentionally set the client incorrectly
     client.default_xml
     client.use_r4
@@ -21,7 +21,7 @@ class MultiversionTest < Test::Unit::TestCase
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     conformance = File.read(File.join(root, 'fixtures', 'conformance.json'))
     stub_request(:get, /autodetect/).to_return(body: conformance)
-    client = FHIR::Client.new('autodetect')
+    client = FHIR::Client.new('autodetect', fhir_version: :auto)
     # Intentionally set the client incorrectly
     client.default_xml
     client.use_r4
@@ -36,7 +36,7 @@ class MultiversionTest < Test::Unit::TestCase
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     conformance = File.read(File.join(root, 'fixtures', 'r4_capabilitystatement.json'))
     stub_request(:get, /autodetect/).to_return(body: conformance)
-    client = FHIR::Client.new('autodetect')
+    client = FHIR::Client.new('autodetect', fhir_version: :auto)
     # Intentionally set the client incorrectly
     client.default_xml
     client.use_stu3
@@ -49,7 +49,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_patient_manual
     stub_request(:get, /stu3/).to_return(body: FHIR::STU3::Patient.new.to_json)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_json
     client.use_stu3
     assert_equal :stu3, client.fhir_version
@@ -58,7 +58,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_patient_manual
     stub_request(:get, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({ 'id': 'foo' }).to_json)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_json
     client.use_dstu2
     assert_equal :dstu2, client.fhir_version
@@ -68,7 +68,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_patient_manual
     stub_request(:get, /r4/).to_return(body: FHIR::Patient.new({ 'id': 'foo' }).to_json)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_json
     client.use_r4
     assert_equal :r4, client.fhir_version
@@ -77,7 +77,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_patient_klass_access
     stub_request(:get, /stu3/).to_return(body: FHIR::STU3::Patient.new.to_json)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_json
     client.use_stu3
     FHIR::STU3::Model.client = client
@@ -86,7 +86,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_patient_klass_access
     stub_request(:get, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({ 'id': 'foo' }).to_json)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_json
     client.use_dstu2
     FHIR::DSTU2::Model.client = client
@@ -95,7 +95,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_patient_klass_access
     stub_request(:get, /r4/).to_return(body: FHIR::Patient.new({ 'id': 'foo' }).to_json)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_json
     client.use_r4
     FHIR::Model.client = client
@@ -104,7 +104,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_reply_fhir_version
     stub_request(:get, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({ 'id': 'foo' }).to_json)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_json
     client.use_dstu2
     FHIR::DSTU2::Model.client = client
@@ -114,7 +114,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_reply_fhir_version
     stub_request(:get, /stu3/).to_return(body: FHIR::STU3::Patient.new({ 'id': 'foo' }).to_json)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_json
     client.use_stu3
     FHIR::STU3::Model.client = client
@@ -124,7 +124,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_reply_fhir_version
     stub_request(:get, /r4/).to_return(body: FHIR::Patient.new({ 'id': 'foo' }).to_json)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_json
     client.use_r4
     FHIR::Model.client = client
@@ -134,7 +134,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_accept_mime_type_json
     stub_request(:get, /stu3/).to_return(body: FHIR::STU3::Patient.new({'id': 'foo'}).to_json)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_json
     client.use_stu3
     assert_equal :stu3, client.fhir_version
@@ -143,7 +143,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_accept_mime_type_json
     stub_request(:get, /r4/).to_return(body: FHIR::Patient.new({'id': 'foo'}).to_json)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_json
     client.use_r4
     assert_equal :r4, client.fhir_version
@@ -152,7 +152,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_accept_mime_type_json
     stub_request(:get, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({'id': 'foo'}).to_json)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_json
     client.use_dstu2
     assert_equal :dstu2, client.fhir_version
@@ -162,7 +162,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_content_type_mime_type_json
     stub_request(:post, /stu3/).to_return(body: FHIR::STU3::Patient.new({'id': 'foo'}).to_json)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_json
     client.use_stu3
     assert_equal :stu3, client.fhir_version
@@ -172,7 +172,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_content_type_mime_type_json
     stub_request(:post, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({'id': 'foo'}).to_json)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_json
     client.use_dstu2
     assert_equal :dstu2, client.fhir_version
@@ -182,7 +182,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_content_type_mime_type_json
     stub_request(:post, /r4/).to_return(body: FHIR::Patient.new({'id': 'foo'}).to_json)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_json
     client.use_r4
     assert_equal :r4, client.fhir_version
@@ -191,7 +191,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_accept_mime_type_xml
     stub_request(:get, /stu3/).to_return(body: FHIR::STU3::Patient.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_xml
     client.use_stu3
     assert_equal :stu3, client.fhir_version
@@ -200,7 +200,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_accept_mime_type_xml
     stub_request(:get, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_xml
     client.use_dstu2
     assert_equal :dstu2, client.fhir_version
@@ -210,7 +210,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_accept_mime_type_xml
     stub_request(:get, /r4/).to_return(body: FHIR::Patient.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_xml
     client.use_r4
     assert_equal :r4, client.fhir_version
@@ -220,7 +220,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_content_type_mime_type_xml
     stub_request(:post, /stu3/).to_return(body: FHIR::STU3::Patient.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_xml
     client.use_stu3
     assert_equal :stu3, client.fhir_version
@@ -229,7 +229,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_content_type_mime_type_xml
     stub_request(:post, /r4/).to_return(body: FHIR::Patient.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_xml
     client.use_r4
     assert_equal :r4, client.fhir_version
@@ -239,7 +239,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_content_type_mime_type_xml
     stub_request(:post, /dstu2/).to_return(body: FHIR::DSTU2::Patient.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_xml
     client.use_dstu2
     assert_equal :dstu2, client.fhir_version
@@ -249,7 +249,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_transaction
     stub_request(:post, /dstu2/).to_return(body: FHIR::DSTU2::Bundle.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_xml
     client.use_dstu2
     client.begin_transaction
@@ -263,7 +263,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_transaction
     stub_request(:post, /stu3/).to_return(body: FHIR::STU3::Bundle.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_xml
     client.use_stu3
     client.begin_transaction
@@ -277,7 +277,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_transaction
     stub_request(:post, /r4/).to_return(body: FHIR::Bundle.new({'id': 'foo'}).to_xml)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_xml
     client.use_r4
     client.begin_transaction
@@ -294,7 +294,7 @@ class MultiversionTest < Test::Unit::TestCase
     bundle.entry << FHIR::DSTU2::Bundle::Entry.new
     bundle.entry.last.resource = FHIR::DSTU2::Patient.new({'id': 'example-patient'})
     stub_request(:get, 'http://dstu2/Patient/example-patient/$everything').to_return(body: bundle.to_xml)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_xml
     client.use_dstu2
     reply = client.fetch_patient_record('example-patient')
@@ -309,7 +309,7 @@ class MultiversionTest < Test::Unit::TestCase
     bundle.entry << FHIR::STU3::Bundle::Entry.new
     bundle.entry.last.resource = FHIR::STU3::Patient.new({'id': 'example-patient'})
     stub_request(:get, 'http://stu3/Patient/example-patient/$everything').to_return(body: bundle.to_xml)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_xml
     client.use_stu3
     reply = client.fetch_patient_record('example-patient')
@@ -324,7 +324,7 @@ class MultiversionTest < Test::Unit::TestCase
     bundle.entry << FHIR::Bundle::Entry.new
     bundle.entry.last.resource = FHIR::Patient.new({'id': 'example-patient'})
     stub_request(:get, 'http://r4/Patient/example-patient/$everything').to_return(body: bundle.to_xml)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_xml
     client.use_r4
     reply = client.fetch_patient_record('example-patient')
@@ -339,7 +339,7 @@ class MultiversionTest < Test::Unit::TestCase
     bundle.entry << FHIR::DSTU2::Bundle::Entry.new
     bundle.entry.last.resource = FHIR::DSTU2::Encounter.new({'id': 'example-encounter'})
     stub_request(:get, 'http://dstu2/Encounter/example-encounter/$everything').to_return(body: bundle.to_xml)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_xml
     client.use_dstu2
     reply = client.fetch_encounter_record('example-encounter')
@@ -354,7 +354,7 @@ class MultiversionTest < Test::Unit::TestCase
     bundle.entry << FHIR::STU3::Bundle::Entry.new
     bundle.entry.last.resource = FHIR::STU3::Encounter.new({'id': 'example-encounter'})
     stub_request(:get, 'http://stu3/Encounter/example-encounter/$everything').to_return(body: bundle.to_xml)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_xml
     client.use_stu3
     reply = client.fetch_encounter_record('example-encounter')
@@ -369,7 +369,7 @@ class MultiversionTest < Test::Unit::TestCase
     bundle.entry << FHIR::Bundle::Entry.new
     bundle.entry.last.resource = FHIR::Encounter.new({'id': 'example-encounter'})
     stub_request(:get, 'http://r4/Encounter/example-encounter/$everything').to_return(body: bundle.to_xml)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_xml
     client.use_r4
     reply = client.fetch_encounter_record('example-encounter')
@@ -381,7 +381,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_dstu2_terminology_valueset_lookup
     stub_request(:post, /dstu2/).to_return(body: FHIR::DSTU2::Parameters.new({'id': 'results'}).to_xml)
-    client = FHIR::Client.new('dstu2')
+    client = FHIR::Client.new('dstu2', fhir_version: :dstu2)
     client.default_xml
     client.use_dstu2
     options = {
@@ -401,7 +401,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_stu3_terminology_code_system_lookup
     stub_request(:post, /stu3/).to_return(body: FHIR::STU3::Parameters.new({'id': 'results'}).to_xml)
-    client = FHIR::Client.new('stu3')
+    client = FHIR::Client.new('stu3', fhir_version: :stu3)
     client.default_xml
     client.use_stu3
     options = {
@@ -421,7 +421,7 @@ class MultiversionTest < Test::Unit::TestCase
 
   def test_r4_terminology_code_system_lookup
     stub_request(:post, /r4/).to_return(body: FHIR::Parameters.new({'id': 'results'}).to_xml)
-    client = FHIR::Client.new('r4')
+    client = FHIR::Client.new('r4', fhir_version: :r4)
     client.default_xml
     client.use_r4
     options = {

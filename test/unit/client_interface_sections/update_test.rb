@@ -2,7 +2,7 @@ require_relative '../../test_helper'
 
 class ClientInterfaceUpdateTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new('update-test')
+    @client ||= FHIR::Client.new('update-test', fhir_version: :r4)
     @client.use_dstu2
     @client.default_json
     @client

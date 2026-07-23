@@ -2,8 +2,7 @@ require_relative '../test_helper'
 
 class R4BSupportTest < Test::Unit::TestCase
   def test_explicit_r4b_selection_uses_the_r4b_namespace
-    client = FHIR::Client.new('http://r4b')
-    client.use_r4b
+    client = FHIR::Client.new('http://r4b', fhir_version: :r4b)
 
     assert_equal :r4b, client.fhir_version
     assert_same FHIR::R4B, client.fhir_namespace
@@ -25,7 +24,7 @@ class R4BSupportTest < Test::Unit::TestCase
     stub_request(:get, 'http://r4b/Patient/foo').to_return(
       body: FHIR::R4B::Patient.new('id' => 'foo').to_json
     )
-    client = FHIR::Client.new('http://r4b')
+    client = FHIR::Client.new('http://r4b', fhir_version: :r4b)
     client.default_json
 
     reply = client.read(FHIR::R4B::Patient, 'foo')
@@ -92,7 +91,7 @@ class R4BSupportTest < Test::Unit::TestCase
   def test_autodetect_r4b_json
     capability = FHIR::R4B::CapabilityStatement.new('fhirVersion' => '4.3.0')
     stub_request(:get, 'http://autodetect/metadata').to_return(body: capability.to_json)
-    client = FHIR::Client.new('http://autodetect')
+    client = FHIR::Client.new('http://autodetect', fhir_version: :auto)
     client.default_json
 
     assert_equal :r4b, client.detect_version
@@ -102,7 +101,7 @@ class R4BSupportTest < Test::Unit::TestCase
   def test_autodetect_r4b_xml
     capability = FHIR::R4B::CapabilityStatement.new('fhirVersion' => '4.3.0')
     stub_request(:get, 'http://autodetect/metadata').to_return(body: capability.to_xml)
-    client = FHIR::Client.new('http://autodetect')
+    client = FHIR::Client.new('http://autodetect', fhir_version: :auto)
     client.default_xml
 
     assert_equal :r4b, client.detect_version
@@ -112,7 +111,7 @@ class R4BSupportTest < Test::Unit::TestCase
   def test_autodetect_rejects_unsupported_fhir_4_version
     capability = JSON.generate('resourceType' => 'CapabilityStatement', 'fhirVersion' => '4.1.0')
     stub_request(:get, 'http://autodetect/metadata').to_return(body: capability)
-    client = FHIR::Client.new('http://autodetect')
+    client = FHIR::Client.new('http://autodetect', fhir_version: :auto)
     client.default_json
 
     error = assert_raise(ClientException) { client.detect_version }
@@ -122,9 +121,8 @@ class R4BSupportTest < Test::Unit::TestCase
   private
 
   def r4b_client(format)
-    client = FHIR::Client.new('http://r4b')
+    client = FHIR::Client.new('http://r4b', fhir_version: :r4b)
     format == :xml ? client.default_xml : client.default_json
-    client.use_r4b
     client
   end
 end

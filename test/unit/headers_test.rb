@@ -2,7 +2,7 @@ require_relative '../test_helper'
 
 class HeadersTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new("headers-test")
+    @client ||= FHIR::Client.new("headers-test", fhir_version: :r4)
   end
 
   def test_client_additional_headers

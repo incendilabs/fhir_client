@@ -23,8 +23,8 @@ namespace :fhir do
   #  6. :token_url is the token endpoint of the OpenID connect server
   #
   desc 'OAuth2 Example'
-  task :oauth2, [:url, :client_id, :client_secret] do |_t, args|
-    client = FHIR::Client.new(args.url)
+  task :oauth2, [:url, :fhir_version, :client_id, :client_secret] do |_t, args|
+    client = FHIR::Client.new(args.url, fhir_version: resolve_fhir_version(args.fhir_version))
     client_id = args.client_id
     client_secret = args.client_secret
     options = client.get_oauth2_metadata_from_conformance
@@ -32,19 +32,19 @@ namespace :fhir do
       puts 'This server does not support the expected OAuth2 extensions.'
     else
       client.set_oauth2_auth(client_id, client_secret, options[:authorize_url], options[:token_url])
-      reply = client.read_feed(FHIR::Patient)
+      reply = client.read_feed(client.versioned_resource_class(:Patient))
       puts reply.body
     end
   end
 
   desc 'count all resources for a given server'
-  task :count, [:url, :display_zero, :include_all] do |_t, args|
-    client = FHIR::Client.new(args.url)
+  task :count, [:url, :fhir_version, :display_zero, :include_all] do |_t, args|
+    client = FHIR::Client.new(args.url, fhir_version: resolve_fhir_version(args.fhir_version))
     client.try_conformance_formats(FHIR::Formats::ResourceFormat::RESOURCE_JSON)
     display_zero = (args.display_zero == 'true')
     include_all = (args.include_all == 'true')
     counts = {}
-    fhir_resources.each do |klass|
+    fhir_resources(client).each do |klass|
       reply = client.read_feed(klass)
       total = reply.resource.nil? ? 0 : reply.resource.total
       total = reply.resource.each.reduce(0) { |s| s + 1 } if total.nil? && include_all
@@ -62,10 +62,10 @@ namespace :fhir do
   end
 
   desc 'delete all resources for a given server'
-  task :clean, [:url] do |_t, args|
-    client = FHIR::Client.new(args.url)
+  task :clean, [:url, :fhir_version] do |_t, args|
+    client = FHIR::Client.new(args.url, fhir_version: resolve_fhir_version(args.fhir_version))
     client.try_conformance_formats(FHIR::Formats::ResourceFormat::RESOURCE_JSON)
-    fhir_resources.each do |klass|
+    fhir_resources(client).each do |klass|
       puts "Reading #{klass.name.demodulize}..."
       skipped = []
       reply = client.read_feed(klass)
@@ -86,10 +86,18 @@ namespace :fhir do
       end
     end
     puts 'Done cleaning.'
-    Rake::Task['fhir:count'].invoke(args.url)
+    Rake::Task['fhir:count'].invoke(args.url, args.fhir_version)
   end
 
-  def fhir_resources
-    FHIR::RESOURCES.map { |r| Object.const_get("FHIR::#{r}") }
+  def fhir_resources(client)
+    namespace = client.fhir_namespace
+    namespace.const_get(:RESOURCES).map { |resource| namespace.const_get(resource) }
+  end
+
+  def resolve_fhir_version(value)
+    normalized = value.to_s.strip.downcase
+    raise ArgumentError, 'FHIR version is required' if normalized.empty?
+
+    normalized.to_sym
   end
 end

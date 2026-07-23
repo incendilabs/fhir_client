@@ -2,7 +2,7 @@ require_relative '../../test_helper'
 
 class ClientInterfaceOperationTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new('operation-test')
+    @client ||= FHIR::Client.new('operation-test', fhir_version: :r4)
   end
 
   def test_match_operation

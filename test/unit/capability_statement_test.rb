@@ -2,7 +2,7 @@ require_relative '../test_helper'
 
 class CapabilityStatementTest < Test::Unit::TestCase
   def client
-    @client ||= FHIR::Client.new('capability-test')
+    @client ||= FHIR::Client.new('capability-test', fhir_version: :r4)
   end
 
   def test_metadata_returns_capability_statement
