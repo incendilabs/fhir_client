@@ -89,12 +89,19 @@ module FHIR
       @default_format = versioned_format_class
     end
 
+    def use_r5
+      @fhir_version = :r5
+      @default_format = versioned_format_class
+    end
+
     def use_fhir_version(fhir_version)
       case fhir_version
       when :r4
         use_r4
       when :r4b
         use_r4b
+      when :r5
+        use_r5
       when :stu3
         use_stu3
       when :dstu2

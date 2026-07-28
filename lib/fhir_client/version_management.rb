@@ -13,6 +13,8 @@ module FHIR
         FHIR
       when :r4b
         FHIR::R4B
+      when :r5
+        FHIR::R5
       when :stu3
         FHIR::STU3
       when :dstu2
@@ -56,6 +58,7 @@ module FHIR
       return fhir_namespace if klass.nil?
 
       ancestors = klass.ancestors
+      return FHIR::R5 if defined?(FHIR::R5::Model) && ancestors.include?(FHIR::R5::Model)
       return FHIR::R4B if defined?(FHIR::R4B::Model) && ancestors.include?(FHIR::R4B::Model)
       return FHIR::DSTU2 if ancestors.include?(FHIR::DSTU2::Model)
       return FHIR::STU3 if ancestors.include?(FHIR::STU3::Model)
