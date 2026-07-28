@@ -222,6 +222,12 @@ class R5WorkflowsTest < Test::Unit::TestCase
 
     assert_instance_of FHIR::R5::OperationOutcome, json_reply.resource
     assert_instance_of FHIR::R5::OperationOutcome, xml_reply.resource
+    assert_equal(
+      [{ 'op' => 'replace', 'path' => '/Patient/active', 'value' => false }],
+      JSON.parse(json_reply.request[:payload])
+    )
+    assert_match(%r{<diff>}, xml_reply.request[:payload])
+    assert_match(%r{sel="/Patient/active/@value"}, xml_reply.request[:payload])
   end
 
   def test_r5_model_history_returns_r5_bundle

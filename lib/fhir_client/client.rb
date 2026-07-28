@@ -463,8 +463,9 @@ module FHIR
           end
         end
         builder.to_xml
+      else
+        patchset
       end
-      patchset
     end
 
     def clean_headers(headers)
