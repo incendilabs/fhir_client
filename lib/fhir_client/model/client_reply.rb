@@ -50,6 +50,7 @@ module FHIR
     attr_accessor :resource # a FHIR resource
     attr_accessor :resource_class # class of the :resource
     attr_accessor :fhir_version
+    attr_accessor :response_format
 
     def initialize(request, response, client)
       @request = request

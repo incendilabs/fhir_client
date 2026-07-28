@@ -205,27 +205,9 @@ module FHIR
         options[:resource] = resource.class
         options[:format] = format || @default_format
         reply = post resource_url(options), resource, fhir_headers(headers)
-        if [200, 201].include? reply.code
-          type = reply.response[:headers].detect{|x, _y| x.downcase=='content-type'}.try(:last)
-          if !type.nil?
-            reply.resource = if type.include?('xml') && !reply.body.empty?
-                               klass = self.versioned_resource_class(:Xml)
-                               klass.from_xml(reply.body)
-                             elsif type.include?('json') && !reply.body.empty?
-                               klass = self.versioned_resource_class(:Json)
-                               klass.from_json(reply.body)
-                             else
-                               resource # just send back the submitted resource
-                             end
-            resource.id = FHIR::ResourceAddress.pull_out_id(resource.class.name.demodulize, reply.self_link)
-          else
-            resource.id = FHIR::ResourceAddress.pull_out_id(resource.class.name.demodulize, reply.self_link)
-            reply.resource = resource # don't know the content type, so return the resource provided
-          end
-        else
-          resource.id = FHIR::ResourceAddress.pull_out_id(resource.class.name.demodulize, reply.self_link)
-          reply.resource = resource # just send back the submitted resource
-        end
+        parsed_resource = parse_reply(resource.class, format, reply)
+        reply.resource = parsed_resource || resource
+        resource.id = FHIR::ResourceAddress.pull_out_id(resource.class.name.demodulize, reply.self_link)
         reply.resource.client = self
         reply.resource_class = resource.class
         reply
