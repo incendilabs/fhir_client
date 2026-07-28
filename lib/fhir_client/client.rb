@@ -405,6 +405,8 @@ module FHIR
         :r4
       when /\A4\.3\./
         :r4b
+      when /\A5\.0\.\d+\z/
+        :r5
       when /\A3\.0\./
         :stu3
       when /\A1\.0\./
