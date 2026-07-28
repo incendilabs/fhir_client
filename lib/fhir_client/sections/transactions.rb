@@ -65,16 +65,9 @@ module FHIR
         headers[:content_type] =  "#{format}"
         options = { format: format}
         reply = post resource_url(options), @transaction_bundle, fhir_headers(headers)
-        begin
-          reply.resource = if format.downcase.include?('xml')
-                             versioned_resource_class('Xml').from_xml(reply.body)
-                           else
-                             versioned_resource_class('Json').from_json(reply.body)
-                           end
-        rescue
-          reply.resource = nil
-        end
-        reply.resource_class = reply.resource.class
+        bundle_class = versioned_resource_class(:Bundle)
+        reply.resource = parse_reply(bundle_class, format, reply)
+        reply.resource_class = bundle_class
         reply
       end
     end

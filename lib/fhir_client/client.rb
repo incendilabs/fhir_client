@@ -358,13 +358,20 @@ module FHIR
     end
 
     def reissue_request(request)
-      if [:get, :delete, :head].include?(request['method'])
-        method(request['method']).call(request['url'], request['headers'])
-      elsif [:post, :put].include?(request['method'])
-        unless request['payload'].nil?
-          resource = versioned_resource_class.from_contents(request['payload'])
+      request_method = request[:method] || request['method']
+      url = request[:url] || request['url']
+      headers = request[:headers] || request['headers']
+      payload = request[:payload] || request['payload']
+      return if request_method.nil?
+
+      request_method = request_method.to_sym
+      if [:get, :delete, :head].include?(request_method)
+        method(request_method).call(url, headers)
+      elsif [:post, :put].include?(request_method)
+        unless payload.nil?
+          resource = versioned_resource_class.from_contents(payload)
         end
-        method(request['method']).call(request['url'], resource, request['headers'])
+        method(request_method).call(url, resource, headers)
       end
     end
 
