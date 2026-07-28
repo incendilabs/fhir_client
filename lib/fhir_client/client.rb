@@ -332,10 +332,17 @@ module FHIR
 
     def parse_reply(klass, format, response)
       FHIR.logger.debug "Parsing response with {klass: #{klass}, format: #{format}, code: #{response.code}}."
-      return nil unless [200, 201].include? response.code
+      namespace = resource_namespace_for(klass)
+      if klass && namespace != fhir_namespace
+        raise ClientException, "Resource class #{klass} does not match client FHIR version #{@fhir_version}"
+      end
+
+      format = response_format(response, format)
+      response.response_format = format
+      return nil if response.body.nil? || response.body.empty?
+
       res = nil
       begin
-        namespace = resource_namespace_for(klass)
         parser = format.include?('xml') ? namespace.const_get(:Xml) : namespace.const_get(:Json)
         res = format.include?('xml') ? parser.from_xml(response.body) : parser.from_json(response.body)
         res.client = self unless res.nil?
@@ -362,6 +369,15 @@ module FHIR
     end
 
     private
+
+    def response_format(response, fallback)
+      headers = response.response && response.response[:headers]
+      content_type = headers&.detect do |key, _value|
+        key.to_s.tr('_', '-').casecmp('content-type').zero?
+      end&.last
+
+      (content_type || fallback).to_s.split(';').first.strip.downcase
+    end
 
     def capability_fhir_version(body)
       return nil if body.nil?
