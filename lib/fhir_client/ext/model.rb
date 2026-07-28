@@ -8,11 +8,11 @@ module FHIR
 
     module InstanceMethods
       def client
-        FHIR::Model.client
+        @client || self.class.client
       end
 
       def client=(client)
-        FHIR::Model.client = client
+        @client = client
       end
 
       def vread(version_id)
@@ -42,7 +42,7 @@ module FHIR
 
       def resolve(reference)
         if reference.contained?
-          contained.detect { |c| c.id == reference.id }
+          contained.detect { |c| c.id == reference.reference_id }
         else
           reference.read
         end
