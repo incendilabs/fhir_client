@@ -3,7 +3,7 @@
 Ruby FHIR client.
 
 Supports:
-* FHIR R4B, R4, STU3 and DSTU2
+* FHIR R5, R4B, R4, STU3 and DSTU2
 * JSON and XML
 * All CRUD, including version read and history
 * Transactions and Batches
@@ -19,6 +19,13 @@ Supports:
 ## Creating a Client
 ```ruby
 client = FHIR::Client.new(url, fhir_version: :r4)
+```
+
+Select R5 explicitly and use the R5 model namespace:
+
+```ruby
+client = FHIR::Client.new(url, fhir_version: :r5)
+patient = client.read(FHIR::R5::Patient, 'example').resource
 ```
 
 This client supports two modes of operation: basic and advanced.  The basic mode is useful for simple operations
@@ -61,12 +68,17 @@ patient.destroy
 ### Changing FHIR Versions
 The FHIR version is required when the client is created. Pass `:auto` to
 explicitly select version detection through the server's `metadata` endpoint.
+The client supports R5 `5.0.x`, R4B `4.3.x`, R4 `4.0.x`, STU3 `3.0.x`, and
+DSTU2 `1.0.x`. R5 discovery accepts stable numeric `5.0.x` releases and rejects
+ballot, snapshot, CI-build, and unknown `5.x` labels.
 
 ```ruby
 # autodetect the FHIR version
 client = FHIR::Client.new(url, fhir_version: :auto)
 version = client.detect_version
-if version == :r4b
+if version == :r5
+  puts 'FHIR Client using R5'
+elsif version == :r4b
   puts 'FHIR Client using R4B'
 elsif version == :r4
   puts 'FHIR Client using R4'
@@ -76,12 +88,21 @@ elsif version == :dstu2
   puts 'FHIR Client using DSTU2'
 end
 
+# tell the client to use R5
+client.use_r5
+FHIR::R5::Model.client = client
+patient = FHIR::R5::Patient.read('example')
+patient = client.read(FHIR::R5::Patient, 'example').resource
+
 # tell the client to use R4B
 client.use_r4b
+FHIR::R4B::Model.client = client
+patient = FHIR::R4B::Patient.read('example')
+patient = client.read(FHIR::R4B::Patient, 'example').resource
 
 # tell the client to use R4
 client.use_r4
-# now use the client with the DSTU2 models
+# now use the client with the R4 models
 patient = FHIR::Patient.read('example')
 patient = client.read(FHIR::Patient, 'example').resource
 
