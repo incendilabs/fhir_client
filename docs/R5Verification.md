@@ -1,13 +1,13 @@
 # FHIR R5 Client Verification
 
-Verification date: 2026-07-28
+Verification date: 2026-07-31
 
 ## Source Revisions
 
-- `fhir_client`: `43dbd0addf95036b72408bc87a896c770a6f96ca`
+- `fhir_client`: `4273d633730df70bdd58c3f5b14cd595edc04e95`
   (`add-r5-support`)
-- `fhir_models`: `695ea76f0078465d2da8225cbb82be8ba2eec7fd`
-  (`add-r5-support`)
+- `fhir_models`: `e19f0ea2709c367f441c31ad01892275645bbe92`
+  (`master`)
 - `fhir_stu3_models`: `71db01196b6cafe2310498135849cae356fe6f44`
   (`master`)
 - `fhir_dstu2_models`: `66c58438d323f634116dc937446d42d9b4356687`
@@ -20,7 +20,7 @@ Verification date: 2026-07-28
 - RubyGems: `3.6.9`
 - Bundler: `4.0.10`
 - `fhir_client`: `5.1.0`
-- `fhir_models`: `4.1.0`
+- `fhir_models`: `5.0.0`
 - `fhir_stu3_models`: `3.0.1`
 - `fhir_dstu2_models`: `1.0.10`
 - JSON: `2.21.1`
@@ -34,8 +34,10 @@ Verification date: 2026-07-28
 - OAuth2: `1.4.11`
 - Rack: `3.2.6`
 
-The test runs loaded the model libraries from the recorded sibling repository
-revisions through `RUBYLIB`.
+The test runs used the repository-local `tmp/task-8c/Gemfile.lock`. Bundler
+resolved `fhir_models` from
+`https://github.com/incendilabs/fhir_models.git` on `master` at the recorded
+merged SHA; no local model path override was used.
 
 ## Results
 
@@ -51,7 +53,7 @@ network failures, parser fallback, and invalid response bodies. The
 test-framework totals and process exit statuses above are authoritative.
 
 Raw logs and separate numeric exit-status files were written under
-`tmp/task-4f/` during verification.
+`tmp/task-8c/` during verification.
 
 ## Test Commands
 
@@ -60,21 +62,23 @@ All test commands used this environment:
 ```sh
 export RBENV_VERSION=3.4.9
 export PATH=/Users/kennethmyhra/.rbenv/shims:/opt/homebrew/bin:/usr/bin:/bin
-export RUBYLIB=/Users/kennethmyhra/src/fhir_models/lib:/Users/kennethmyhra/src/fhir_dstu2_models/lib:/Users/kennethmyhra/src/fhir_stu3_models/lib
 export RUBYOPT=-W0
+export BUNDLE_GEMFILE="$PWD/tmp/task-8c/Gemfile"
+export BUNDLE_APP_CONFIG="$PWD/tmp/task-8c/.bundle"
+export BUNDLE_PATH="$PWD/tmp/task-8c/gems"
 ```
 
 Complete unit suite:
 
 ```sh
-ruby -Ilib -Itest -e \
+bundle _2.7.2_ exec ruby -Ilib -Itest -e \
   'Dir["test/**/*_test.rb"].sort.each { |file| require File.expand_path(file) }'
 ```
 
 Focused R5 selection, response parsing, workflows, and autodetection:
 
 ```sh
-ruby -Ilib -Itest -e \
+bundle _2.7.2_ exec ruby -Ilib -Itest -e \
   'files = ARGV.dup; ARGV.clear; files.each { |file| require File.expand_path(file) }' \
   test/unit/r5_selection_test.rb \
   test/unit/r5_response_parsing_test.rb \
@@ -85,7 +89,7 @@ ruby -Ilib -Itest -e \
 Focused R4B, R4, STU3, and DSTU2 regressions:
 
 ```sh
-ruby -Ilib -Itest -e \
+bundle _2.7.2_ exec ruby -Ilib -Itest -e \
   'files = ARGV.dup; ARGV.clear; files.each { |file| require File.expand_path(file) }' \
   test/unit/basic_test.rb \
   test/unit/multiversion_test.rb \
@@ -104,17 +108,17 @@ ruby -Ilib -Itest -e \
 ## Package Verification
 
 The final `fhir_client-5.1.0.gem` was built from the recorded client revision
-and installed with locally built model gems into
-`tmp/task-4f/final/gems`.
+and installed with the merged `fhir_models 5.0.0` gem into
+`tmp/task-8c/isolated-gems`.
 
-The isolated load pre-activated the minimum supported `fhir_models 4.1.0`,
+The isolated load pre-activated the minimum supported `fhir_models 5.0.0`,
 then verified:
 
 - `FHIR::Client::VERSION` is `5.1.0`.
-- `FHIR::Models::VERSION` is `4.1.0`.
+- `FHIR::Models::VERSION` is `5.0.0`.
 - `FHIR::R5::Patient` loads and inherits from `FHIR::R5::Model`.
 - The packaged FHIR API validation JSON parses with JSON `2.21.1`.
-- The gem contains 40 files, including the expected runtime and documentation
+- The gem contains 41 files, including the expected runtime and documentation
   files.
 - Test files are excluded from the gem.
 
@@ -122,26 +126,26 @@ The package check used:
 
 ```sh
 gem build fhir_client.gemspec \
-  --output tmp/task-4f/final/fhir_client-5.1.0.gem
+  --output tmp/task-8c/fhir_client-5.1.0.gem
 
 gem install --local --ignore-dependencies \
-  --install-dir tmp/task-4f/final/gems \
-  tmp/task-4e/fhir_models-4.1.0.gem
+  --install-dir tmp/task-8c/isolated-gems \
+  ../fhir_models/tmp/task-8b/merged-master-e19f0ea2/fhir_models-5.0.0.gem
 
 gem install --local --ignore-dependencies \
-  --install-dir tmp/task-4f/final/gems \
+  --install-dir tmp/task-8c/isolated-gems \
   tmp/task-4e/fhir_stu3_models-3.0.1.gem
 
 gem install --local --ignore-dependencies \
-  --install-dir tmp/task-4f/final/gems \
+  --install-dir tmp/task-8c/isolated-gems \
   tmp/task-4e/fhir_dstu2_models-1.0.10.gem
 
 gem install --local --ignore-dependencies \
-  --install-dir tmp/task-4f/final/gems \
-  tmp/task-4f/final/fhir_client-5.1.0.gem
+  --install-dir tmp/task-8c/isolated-gems \
+  tmp/task-8c/fhir_client-5.1.0.gem
 
-GEM_HOME="$PWD/tmp/task-4f/final/gems" \
-GEM_PATH="$PWD/tmp/task-4f/final/gems:$HOME/.rbenv/versions/3.4.9/lib/ruby/gems/3.4.0" \
+GEM_HOME="$PWD/tmp/task-8c/isolated-gems" \
+GEM_PATH="$PWD/tmp/task-8c/isolated-gems:$PWD/../fhir_models/tmp/test-gems" \
 ruby -e \
-  'gem "fhir_models", "= 4.1.0"; gem "fhir_client", "= 5.1.0"; require "fhir_client"; abort unless FHIR::R5::Patient.new.is_a?(FHIR::R5::Model)'
+  'gem "fhir_models", "= 5.0.0"; gem "fhir_client", "= 5.1.0"; require "fhir_client"; client = FHIR::Client.new("http://example.test", fhir_version: :r5); patient = FHIR::R5::Json.from_json(%({"resourceType":"Patient","id":"example"})); abort unless client.fhir_version == :r5 && patient.is_a?(FHIR::R5::Patient)'
 ```
