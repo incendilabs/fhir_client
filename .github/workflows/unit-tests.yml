@@ -1,0 +1,30 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4.9'
+          bundler-cache: true
+
+      - name: Run unit tests
+        run: >-
+          bundle exec ruby -Ilib -Itest -e
+          'ARGV.each { |file| require File.expand_path(file) }'
+          $(find test -name '*_test.rb' -print)
