@@ -17,6 +17,26 @@ class MultiversionTest < Test::Unit::TestCase
     assert client.default_format.include? 'json'
   end
 
+  def test_autodetect_logs_intermediate_parse_failure_at_debug
+    root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
+    capabilitystatement = File.read(File.join(root, 'fixtures', 'capabilitystatement.json'))
+    stub_request(:get, /autodetect/).to_return(body: capabilitystatement)
+    original_logger = FHIR.logger
+    log_output = StringIO.new
+    FHIR.logger = Logger.new(log_output)
+
+    client = FHIR::Client.new('autodetect', fhir_version: :auto)
+    client.default_xml
+    client.use_r4
+    client.detect_version
+
+    message = 'Failed to parse application/fhir+xml as resource FHIR::STU3::CapabilityStatement'
+    assert_match(/DEBUG -- : #{Regexp.escape(message)}/, log_output.string)
+    assert_no_match(/ERROR -- : #{Regexp.escape(message)}/, log_output.string)
+  ensure
+    FHIR.logger = original_logger
+  end
+
   def test_autodetect_dstu2
     root = File.expand_path '..', File.dirname(File.absolute_path(__FILE__))
     conformance = File.read(File.join(root, 'fixtures', 'conformance.json'))

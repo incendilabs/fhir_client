@@ -347,7 +347,8 @@ module FHIR
         res = format.include?('xml') ? parser.from_xml(response.body) : parser.from_json(response.body)
         res.client = self unless res.nil?
       rescue => e
-        FHIR.logger.error "Failed to parse #{format} as resource #{klass}: #{e.message}"
+        message = "Failed to parse #{format} as resource #{klass}: #{e.message}"
+        FHIR.logger.debug(message)
         res = nil
       end
       res
@@ -492,7 +493,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.debug "GET - Request: #{url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           response = e.response if e.response
@@ -539,7 +540,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "GET - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.debug "GET - Request: #{url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           response = e.response
@@ -574,7 +575,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "POST - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.debug "POST - Request: #{url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           response = e.response if e.response
@@ -621,7 +622,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "PUT - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.debug "PUT - Request: #{url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           response = e.response if e.response
@@ -668,7 +669,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "PATCH - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.debug "PATCH - Request: #{url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           response = e.response if e.response
@@ -704,7 +705,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "PATCH - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.debug "PATCH - Request: #{url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           req = {
@@ -736,7 +737,7 @@ module FHIR
           if !e.respond_to?(:response) || e.response.nil?
             # Re-raise the client error if there's no response. Otherwise, logging
             # and other things break below!
-            FHIR.logger.error "DELETE - Request: #{url} failed! No response from server: #{e}"
+            FHIR.logger.debug "DELETE - Request: #{url} failed! No response from server: #{e}"
             raise # Re-raise the same error we caught.
           end
           response = e.response if e.response
