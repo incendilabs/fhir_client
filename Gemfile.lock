@@ -218,7 +218,6 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
-  bundler (~> 2.0)
   fhir_client!
   fhir_dstu2_models!
   fhir_models!
@@ -231,4 +230,4 @@ DEPENDENCIES
   webmock
 
 BUNDLED WITH
-   2.6.9
+  4.0.10
