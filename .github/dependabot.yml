@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: bundler
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      fhir:
+        patterns: ["fhir_*"]
+      bundler:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
